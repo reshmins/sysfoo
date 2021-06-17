@@ -7,6 +7,12 @@ pipeline {
   }
   stages {
     stage('build') {
+      agent {
+        docker {
+          image 'maven:3.6.3-jdk-11-slm'
+        }
+
+      }
       steps {
         echo 'compile sysfoo app'
         sh 'mvn compile'
@@ -14,6 +20,12 @@ pipeline {
     }
 
     stage('test') {
+      agent {
+        docker {
+          image 'maven:3.6.3-jdk-11-slm'
+        }
+
+      }
       steps {
         echo 'running unit tests'
         sh 'mvn clean test'
@@ -21,10 +33,31 @@ pipeline {
     }
 
     stage('package') {
+      agent {
+        docker {
+          image 'maven:3.6.3-jdk-11-slm'
+        }
+
+      }
       steps {
         echo 'packaging app to generate artifacts'
         sh 'mvn package -DskipTests'
         archiveArtifacts 'target/*.war'
+      }
+    }
+
+    stage('Docker BnP') {
+      agent any
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'chinDocker!13') {
+            def dockerImage = docker.build("reshmins/sysfoo:v${env.BUILD_ID}", "./")
+            dockerImage.push()
+            dockerImage.push("latest")
+            dockerImage.push("dev")
+          }
+        }
+
       }
     }
 
