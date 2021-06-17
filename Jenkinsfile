@@ -50,7 +50,7 @@ pipeline {
       agent any
       steps {
         script {
-          docker.withRegistry('https://index.docker.io/v1/', 'chinDocker!13') {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
             def dockerImage = docker.build("reshmins/sysfoo:v${env.BUILD_ID}", "./")
             dockerImage.push()
             dockerImage.push("latest")
